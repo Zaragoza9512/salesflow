@@ -8,6 +8,7 @@ import (
 
 	"github.com/Zaragoza9512/salesflow/internal/auth"
 	"github.com/Zaragoza9512/salesflow/internal/database"
+	customMiddleware "github.com/Zaragoza9512/salesflow/internal/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/joho/godotenv"
@@ -30,15 +31,20 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
+	// rutas públicas — no requieren token
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"status":"ok","service","salesflow}`)
+		fmt.Fprintf(w, `{"status":"ok","service":"salesflow"}`)
 	})
-
 	r.Post("/auth/register", auth.Register(db))
-
 	r.Post("/auth/login", auth.Login(db))
+
+	// rutas protegidas — requieren token JWT válido
+	r.Group(func(r chi.Router) {
+		r.Use(customMiddleware.AuthMiddleware)
+		// aquí van las rutas de leads
+	})
 
 	log.Fatal(http.ListenAndServe(":"+port, r))
 }
