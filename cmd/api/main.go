@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/Zaragoza9512/salesflow/internal/database"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/joho/godotenv"
@@ -15,6 +16,9 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
 	}
+
+	db := database.Connect()
+	defer db.Close()
 
 	port := os.Getenv("APP_PORT")
 	if port == "" {
