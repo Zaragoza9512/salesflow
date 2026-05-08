@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/Zaragoza9512/salesflow/internal/auth"
 	"github.com/Zaragoza9512/salesflow/internal/database"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -34,5 +35,8 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, `{"status":"ok","service","salesflow}`)
 	})
+
+	r.Post("/auth/register", auth.Register(db))
+
 	log.Fatal(http.ListenAndServe(":"+port, r))
 }
