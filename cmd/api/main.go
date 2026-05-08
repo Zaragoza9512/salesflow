@@ -38,5 +38,7 @@ func main() {
 
 	r.Post("/auth/register", auth.Register(db))
 
+	r.Post("/auth/login", auth.Login(db))
+
 	log.Fatal(http.ListenAndServe(":"+port, r))
 }
