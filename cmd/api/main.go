@@ -8,6 +8,7 @@ import (
 
 	"github.com/Zaragoza9512/salesflow/internal/auth"
 	"github.com/Zaragoza9512/salesflow/internal/database"
+	"github.com/Zaragoza9512/salesflow/internal/leads"
 	customMiddleware "github.com/Zaragoza9512/salesflow/internal/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -44,6 +45,11 @@ func main() {
 	r.Group(func(r chi.Router) {
 		r.Use(customMiddleware.AuthMiddleware)
 		// aquí van las rutas de leads
+		r.Post("/leads", leads.Create(db))
+		r.Get("/leads", leads.List(db))
+		r.Get("/leads/{id}", leads.GetByID(db))
+		r.Put("/leads/{id}", leads.Update(db))
+		r.Delete("/leads/{id}", leads.Delete(db))
 	})
 
 	log.Fatal(http.ListenAndServe(":"+port, r))
