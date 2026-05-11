@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/Zaragoza9512/salesflow/internal/middleware"
+	"github.com/Zaragoza9512/salesflow/internal/scoring"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -48,6 +49,11 @@ func Create(db *sql.DB) http.HandlerFunc {
 			http.Error(w, "error al crear lead", http.StatusInternalServerError)
 			return
 		}
+
+		// paso 4 - calcular el score del lead en segundo plano
+		// "go" significa que se ejecuta sin bloquear la respuesta al cliente
+		// el cliente recibe su respuesta inmediatamente mientras Groq genera el reasoning
+		go scoring.ScoreLead(db, id, req.Nombre, req.Canal, req.TipoCredito, req.ZonaInteres, req.MontoCredito)
 
 		// paso 4 - responder con el id del lead creado
 		w.Header().Set("Content-Type", "application/json")
