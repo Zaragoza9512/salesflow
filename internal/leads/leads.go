@@ -4,9 +4,11 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/Zaragoza9512/salesflow/internal/middleware"
 	"github.com/Zaragoza9512/salesflow/internal/scoring"
+	"github.com/Zaragoza9512/salesflow/pkg/cache"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -112,11 +114,19 @@ func List(db *sql.DB) http.HandlerFunc {
 
 // GetByID devuelve el detalle completo de un lead específico
 // solo puede verlo el asesor dueño del lead (AND user_id = $2)
-func GetByID(db *sql.DB) http.HandlerFunc {
+func GetByID(db *sql.DB, c *cache.Cache) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// obtener user_id del contexto y el id del lead de la URL
 		userID := r.Context().Value(middleware.UserIDKey).(string)
 		id := chi.URLParam(r, "id") // extrae el {id} de /leads/{id}
+
+		// intentar obtener el lead del cache primero
+		cacheKey := "lead:" + id
+		if cached, err := c.Get(cacheKey); err == nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.Write([]byte(cached))
+			return
+		}
 
 		// buscar el lead verificando que pertenece al asesor
 		var nombre, telefono, correo, canal, estado, createdAt string
@@ -132,8 +142,8 @@ func GetByID(db *sql.DB) http.HandlerFunc {
 		}
 
 		// responder con el detalle del lead
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]interface{}{
+		// construir la respuesta
+		response, _ := json.Marshal(map[string]interface{}{
 			"id":         id,
 			"nombre":     nombre,
 			"telefono":   telefono,
@@ -143,12 +153,19 @@ func GetByID(db *sql.DB) http.HandlerFunc {
 			"score":      score,
 			"created_at": createdAt,
 		})
+
+		// guardar en cache por 24 horas
+		c.Set(cacheKey, string(response), 24*time.Hour)
+
+		// responder al cliente
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(response)
 	}
 }
 
 // Update actualiza los datos de un lead existente
 // updated_at=NOW() registra cuándo fue la última modificación
-func Update(db *sql.DB) http.HandlerFunc {
+func Update(db *sql.DB, c *cache.Cache) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID := r.Context().Value(middleware.UserIDKey).(string)
 		id := chi.URLParam(r, "id")
@@ -175,6 +192,9 @@ func Update(db *sql.DB) http.HandlerFunc {
 			http.Error(w, "error al actualizar lead", http.StatusInternalServerError)
 			return
 		}
+
+		// invalidar el cache del lead actualizado
+		c.Delete("lead:" + id)
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]string{

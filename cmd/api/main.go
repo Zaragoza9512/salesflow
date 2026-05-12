@@ -10,6 +10,7 @@ import (
 	"github.com/Zaragoza9512/salesflow/internal/database"
 	"github.com/Zaragoza9512/salesflow/internal/leads"
 	customMiddleware "github.com/Zaragoza9512/salesflow/internal/middleware"
+	cachekg "github.com/Zaragoza9512/salesflow/pkg/cache"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/joho/godotenv"
@@ -22,6 +23,8 @@ func main() {
 
 	db := database.Connect()
 	defer db.Close()
+
+	c := cachekg.NewCache()
 
 	port := os.Getenv("APP_PORT")
 	if port == "" {
@@ -47,8 +50,8 @@ func main() {
 		// aquí van las rutas de leads
 		r.Post("/leads", leads.Create(db))
 		r.Get("/leads", leads.List(db))
-		r.Get("/leads/{id}", leads.GetByID(db))
-		r.Put("/leads/{id}", leads.Update(db))
+		r.Get("/leads/{id}", leads.GetByID(db, c))
+		r.Put("/leads/{id}", leads.Update(db, c))
 		r.Delete("/leads/{id}", leads.Delete(db))
 	})
 

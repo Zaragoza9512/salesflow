@@ -144,6 +144,7 @@ func ScoreLead(db *sql.DB, leadID, nombre, canal, tipoCredito, zonaInteres strin
 	defer resp.Body.Close() // cerrar la respuesta al terminar
 
 	// leer y convertir la respuesta de Groq a nuestra struct
+	var groqResp groqResponse
 	json.NewDecoder(resp.Body).Decode(&groqResp)
 
 	// extraer el texto generado por la IA
