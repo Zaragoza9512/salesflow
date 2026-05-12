@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 )
@@ -36,6 +37,7 @@ type groqResponse struct {
 // ScoreLead califica un lead automáticamente usando reglas fijas + IA
 // se ejecuta en segundo plano cuando se crea un lead nuevo
 func ScoreLead(db *sql.DB, leadID, nombre, canal, tipoCredito, zonaInteres string, montoCredito float64) error {
+	log.Printf("Iniciando scoring para lead %s", leadID)
 
 	// paso 1 - calcular el score base con reglas fijas
 	// cada campo completo suma puntos según su importancia
@@ -78,6 +80,8 @@ func ScoreLead(db *sql.DB, leadID, nombre, canal, tipoCredito, zonaInteres strin
 		score += 10
 	}
 
+	log.Printf("Score calculado: %d", score)
+
 	// paso 2 - definir la categoría basada en el score total
 	// HOT = contactar hoy, WARM = esta semana, COLD = cuando haya tiempo
 	categoria := "COLD"
@@ -110,6 +114,7 @@ func ScoreLead(db *sql.DB, leadID, nombre, canal, tipoCredito, zonaInteres strin
 	// paso 4 - llamar a Groq para generar el reasoning en lenguaje natural
 	// leer la API key del .env
 	apiKey := os.Getenv("GROQ_API_KEY")
+	log.Printf("GROQ_API_KEY presente: %v", apiKey != "")
 
 	// construir el mensaje usando las structs definidas arriba
 	reqBody := groqRequest{
@@ -122,12 +127,14 @@ func ScoreLead(db *sql.DB, leadID, nombre, canal, tipoCredito, zonaInteres strin
 	// convertir la struct a JSON — el formato que Groq entiende
 	jsonBody, err := json.Marshal(reqBody)
 	if err != nil {
+		log.Printf("Error marshaling request: %v", err)
 		return err
 	}
 
 	// preparar la petición HTTP con la URL de Groq
 	req, err := http.NewRequest("POST", "https://api.groq.com/openai/v1/chat/completions", bytes.NewBuffer(jsonBody))
 	if err != nil {
+		log.Printf("Error creating request: %v", err)
 		return err
 	}
 
@@ -139,13 +146,15 @@ func ScoreLead(db *sql.DB, leadID, nombre, canal, tipoCredito, zonaInteres strin
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
+		log.Printf("Error calling Groq: %v", err)
 		return err
 	}
-	defer resp.Body.Close() // cerrar la respuesta al terminar
+	defer resp.Body.Close()
 
 	// leer y convertir la respuesta de Groq a nuestra struct
 	var groqResp groqResponse
 	json.NewDecoder(resp.Body).Decode(&groqResp)
+	log.Printf("Groq response choices: %d", len(groqResp.Choices))
 
 	// extraer el texto generado por la IA
 	reasoning := "Sin reasoning disponible"
@@ -159,8 +168,11 @@ func ScoreLead(db *sql.DB, leadID, nombre, canal, tipoCredito, zonaInteres strin
 		VALUES ($1, $2, $3, $4)`,
 		leadID, score, categoria, reasoning)
 	if err != nil {
+		log.Printf("Error insertando score: %v", err)
 		return err
 	}
+
+	log.Printf("Score guardado: %d, categoria: %s", score, categoria)
 
 	// actualizar el score directamente en la tabla leads
 	// así cuando listes los leads ya vienen con su score actualizado
@@ -168,6 +180,7 @@ func ScoreLead(db *sql.DB, leadID, nombre, canal, tipoCredito, zonaInteres strin
 		UPDATE leads SET score=$1 WHERE id=$2`,
 		score, leadID)
 	if err != nil {
+		log.Printf("Error actualizando lead: %v", err)
 		return err
 	}
 
