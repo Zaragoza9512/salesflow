@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<!-- le dice al navegador que es HTML5 -->
+<html lang="es">
+<!-- lang="es" indica que el contenido está en español -->
+
+<head>
+    <!-- todo lo que el navegador necesita saber pero el usuario no ve -->
+
+    <!-- acepta caracteres en español: ñ, acentos, etc -->
+    <meta charset="UTF-8">
+
+    <!-- hace que se vea bien en celular
+         width=device-width = ancho de página igual al ancho del dispositivo
+         initial-scale=1.0 = sin zoom automático, mostrar al 100% -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- título que aparece en la pestaña del navegador -->
+    <title>SalesFlow</title>
+
+    <!-- conecta el archivo de estilos CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- todo lo que el usuario ve en pantalla va aquí -->
+    <!-- sección de login — visible al inicio -->
+    <div id="login-section">
+        <!-- título de la app -->
+        <h1>SalesFlow</h1>
+        <p>Sistema inteligente de gestión de leads</p>
+
+        <!-- formulario de login -->
+        <div id="login-form">
+            <h2>Iniciar sesión</h2>
+
+            <!-- campo de correo -->
+            <input type="email" id="correo" placeholder="correo@ejemplo.com">
+
+            <!-- campo de contraseña -->
+            <input type="password" id="password" placeholder="Contraseña">
+
+            <!-- botón que llama a la función login() en app.js -->
+            <button onclick="login()">Entrar</button>
+
+            <!-- aquí aparecen los errores -->
+            <p id="login-error"></p>
+            </div>
+        </div>
+
+    <!-- sección del dashboard — oculta al inicio -->
+    <div id="dashboard-section">
+        <!-- barra superior -->
+        <div id="navbar">
+            <h1>SalesFlow</h1>
+            <button onclick="cerrarSesion()">Cerrar sesión</button>
+        </div>
+
+        <!-- filtros de leads -->
+        <div id="filtros">
+            <button onclick="filtrarLeads('todos')">Todos</button>
+            <button onclick="filtrarLeads('HOT')">🔴 HOT</button>
+            <button onclick="filtrarLeads('WARM')">🟡 WARM</button>
+            <button onclick="filtrarLeads('COLD')">🔵 COLD</button>
+            <button onclick="mostrarNuevoLead()">+ Nuevo Lead</button>
+        </div>
+
+        <!-- tabla de leads -->
+        <table id="tabla-leads">
+            <thead>
+                <tr>
+                    <th>Score</th>
+                    <th>Nombre</th>
+                    <th>Canal</th>
+                    <th>Teléfono</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="leads-body">
+                <!-- aquí el JS inserta los leads dinámicamente -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- sección de nuevo lead — oculta al inicio -->
+    <div id="nuevo-lead-section">
+        <!-- título -->
+        <div id="navbar">
+            <h1>Nuevo Lead</h1>
+            <button onclick="mostrarDashboard()">← Volver</button>
+        </div>
+
+        <!-- formulario -->
+        <div id="form-lead">
+            <input type="text" id="lead-nombre" placeholder="Nombre completo">
+            <input type="text" id="lead-telefono" placeholder="Teléfono">
+            <input type="email" id="lead-correo" placeholder="Correo electrónico">
+
+            <!-- canal de origen -->
+            <select id="lead-canal">
+                <option value="">Selecciona canal</option>
+                <option value="WhatsApp">WhatsApp</option>
+                <option value="Referido">Referido</option>
+                <option value="Instagram">Instagram</option>
+                <option value="Facebook">Facebook</option>
+            </select>
+
+            <!-- tipo de crédito -->
+            <select id="lead-tipo-credito">
+                <option value="">Tipo de crédito</option>
+                <option value="INFONAVIT">INFONAVIT</option>
+                <option value="FOVISSSTE">FOVISSSTE</option>
+                <option value="Bancario">Bancario</option>
+                <option value="Contado">Contado</option>
+            </select>
+
+            <input type="number" id="lead-monto" placeholder="Monto de crédito">
+            <input type="text" id="lead-zona" placeholder="Zona de interés">
+
+            <button onclick="crearLead()">Guardar y Calificar</button>
+            <p id="lead-mensaje"></p>
+        </div>
+    </div>
+
+
+    <!-- conecta el archivo JavaScript — va al final para que
+         primero cargue el HTML y luego el JS -->
+    <script src="app.js"></script>
+</body>
+
+</html>

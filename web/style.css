@@ -1,0 +1,126 @@
+/* resetear estilos por defecto del navegador */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+/* fondo general de la página */
+body {
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+/* ocultar secciones — el JS las muestra cuando las necesita */
+#dashboard-section,
+#nuevo-lead-section {
+    display: none;
+}
+
+/* centrar el formulario de login */
+#login-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+/* caja del formulario de login */
+#login-form {
+    background: white;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* barra superior */
+#navbar {
+    background: #2563eb;
+    color: white;
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* filtros */
+#filtros {
+    padding: 16px 24px;
+    display: flex;
+    gap: 8px;
+    background: white;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+/* tabla */
+#tabla-leads {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+#tabla-leads th {
+    background: #f9fafb;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+#tabla-leads td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+/* inputs y botones */
+input, select {
+    padding: 10px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    width: 100%;
+}
+
+button {
+    padding: 10px 20px;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+button:hover {
+    background: #1d4ed8;
+}
+
+/* formulario de nuevo lead */
+#form-lead {
+    max-width: 500px;
+    margin: 24px auto;
+    background: white;
+    padding: 24px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* colores de categorías */
+.hot { color: #dc2626; font-weight: bold; }
+.warm { color: #d97706; font-weight: bold; }
+.cold { color: #2563eb; font-weight: bold; }
+
+/* mensajes de error */
+#login-error, #lead-mensaje {
+    color: #dc2626;
+    font-size: 14px;
+}

@@ -116,9 +116,8 @@ func List(db *sql.DB) http.HandlerFunc {
 // solo puede verlo el asesor dueño del lead (AND user_id = $2)
 func GetByID(db *sql.DB, c *cache.Cache) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// obtener user_id del contexto y el id del lead de la URL
 		userID := r.Context().Value(middleware.UserIDKey).(string)
-		id := chi.URLParam(r, "id") // extrae el {id} de /leads/{id}
+		id := chi.URLParam(r, "id")
 
 		// intentar obtener el lead del cache primero
 		cacheKey := "lead:" + id
@@ -128,36 +127,42 @@ func GetByID(db *sql.DB, c *cache.Cache) http.HandlerFunc {
 			return
 		}
 
-		// buscar el lead verificando que pertenece al asesor
+		// buscar el lead — ahora con todos los campos
 		var nombre, telefono, correo, canal, estado, createdAt string
+		var tipoCredito, zonaInteres string
+		var montoCredito float64
 		var score int
+
 		err := db.QueryRow(`
-			SELECT nombre, telefono, correo, canal, estado, score, created_at
-			FROM leads
-			WHERE id = $1 AND user_id = $2`,
-			id, userID).Scan(&nombre, &telefono, &correo, &canal, &estado, &score, &createdAt)
+            SELECT nombre, telefono, correo, canal, estado, score, created_at,
+                   tipo_credito, monto_credito, zona_interes
+            FROM leads
+            WHERE id = $1 AND user_id = $2`,
+			id, userID).Scan(&nombre, &telefono, &correo, &canal, &estado, &score, &createdAt,
+			&tipoCredito, &montoCredito, &zonaInteres)
 		if err != nil {
 			http.Error(w, "lead no encontrado", http.StatusNotFound)
 			return
 		}
 
-		// responder con el detalle del lead
-		// construir la respuesta
+		// construir la respuesta con todos los campos
 		response, _ := json.Marshal(map[string]interface{}{
-			"id":         id,
-			"nombre":     nombre,
-			"telefono":   telefono,
-			"correo":     correo,
-			"canal":      canal,
-			"estado":     estado,
-			"score":      score,
-			"created_at": createdAt,
+			"id":            id,
+			"nombre":        nombre,
+			"telefono":      telefono,
+			"correo":        correo,
+			"canal":         canal,
+			"estado":        estado,
+			"score":         score,
+			"created_at":    createdAt,
+			"tipo_credito":  tipoCredito,
+			"monto_credito": montoCredito,
+			"zona_interes":  zonaInteres,
 		})
 
 		// guardar en cache por 24 horas
 		c.Set(cacheKey, string(response), 24*time.Hour)
 
-		// responder al cliente
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(response)
 	}

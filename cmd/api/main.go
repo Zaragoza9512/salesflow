@@ -44,6 +44,10 @@ func main() {
 	r.Post("/auth/register", auth.Register(db))
 	r.Post("/auth/login", auth.Login(db))
 
+	// servir archivos estáticos del frontend
+	fs := http.FileServer(http.Dir("./web"))
+	r.Handle("/*", fs)
+
 	// rutas protegidas — requieren token JWT válido
 	r.Group(func(r chi.Router) {
 		r.Use(customMiddleware.AuthMiddleware)
