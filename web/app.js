@@ -1,7 +1,9 @@
 // URL de tu API en producción
 //const API_URL = 'https://salesflow-7rwk.onrender.com';
 // URL local para desarrollo
-const API_URL = 'http://localhost:8080';
+//const API_URL = 'http://localhost:8080';
+
+const API_URL = 'https://salesflow-7rwk.onrender.com';
 
 // token JWT guardado en memoria
 let token = '';

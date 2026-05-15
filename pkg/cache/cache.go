@@ -13,12 +13,26 @@ type Cache struct {
 	client *redis.Client
 }
 
+//	func NewCache() *Cache {
+//		client := redis.NewClient(&redis.Options{
+//			Addr:      os.Getenv("REDIS_HOST") + ":" + os.Getenv("REDIS_PORT"),
+//			Password:  os.Getenv("REDIS_PASSWORD"),
+//			TLSConfig: &tls.Config{},
+//		})
+//		return &Cache{client: client}
+//	}
 func NewCache() *Cache {
-	client := redis.NewClient(&redis.Options{
-		Addr:      os.Getenv("REDIS_HOST") + ":" + os.Getenv("REDIS_PORT"),
-		Password:  os.Getenv("REDIS_PASSWORD"),
-		TLSConfig: &tls.Config{},
-	})
+	options := &redis.Options{
+		Addr:     os.Getenv("REDIS_HOST") + ":" + os.Getenv("REDIS_PORT"),
+		Password: os.Getenv("REDIS_PASSWORD"),
+	}
+
+	// usar TLS solo en producción (cuando hay password configurado)
+	if os.Getenv("REDIS_PASSWORD") != "" {
+		options.TLSConfig = &tls.Config{}
+	}
+
+	client := redis.NewClient(options)
 	return &Cache{client: client}
 }
 
